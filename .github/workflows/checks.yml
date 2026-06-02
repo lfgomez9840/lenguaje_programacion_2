@@ -8,6 +8,9 @@ on:
 jobs:
   quality-checks:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Taller3_Final
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -18,19 +21,13 @@ jobs:
           python-version: "3.12"
 
       - name: Install dependencies
-        run: pip install pytest ruff pre-commit
+        run: pip install pytest ruff
 
       - name: Run Ruff linting
-        working-directory: Taller3_Final
         run: ruff check --output-format=concise .
 
       - name: Run Ruff formatter
-        working-directory: Taller3_Final
         run: ruff format --check .
 
       - name: Run tests with pytest
-        working-directory: Taller3_Final
         run: pytest -v
-
-      - name: Run pre-commit hooks
-        run: pre-commit run --all-files --config Taller3_Final/.pre-commit-config.yaml
