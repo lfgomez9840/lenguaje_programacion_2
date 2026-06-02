@@ -5,6 +5,8 @@ on:
     tags:
       - "v*"
 
+        workflow_dispatch:
+
 jobs:
   quality-checks:
     runs-on: ubuntu-latest
