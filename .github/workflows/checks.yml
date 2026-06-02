@@ -4,8 +4,7 @@ on:
   push:
     tags:
       - "v*"
-
-        workflow_dispatch:
+  workflow_dispatch:
 
 jobs:
   quality-checks:
@@ -23,7 +22,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install dependencies
-                run: pip install -r requirements-dev.txt
+        run: pip install -r requirements-dev.txt
 
       - name: Run Ruff linting
         run: ruff check --output-format=concise .
