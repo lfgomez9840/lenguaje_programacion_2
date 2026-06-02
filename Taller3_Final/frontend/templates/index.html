@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Inicio — TaskManager{% endblock %}
+{% block content %}
+<div class="card hero">
+    <h1>🚀 Sistema de Gestión de Tareas y Proyectos</h1>
+    <p>Plataforma basada en microservicios para administrar usuarios, proyectos y tareas de forma eficiente.</p>
+
+    <div class="features">
+        <div class="card feature-card">
+            <div class="feature-icon">👥</div>
+            <h3>Usuarios</h3>
+            <p>Gestiona los usuarios del sistema con registro y autenticación.</p>
+            <br>
+            <a href="{{ url_for('list_usuarios') }}" class="btn btn-primary">Ver Usuarios</a>
+        </div>
+
+        <div class="card feature-card">
+            <div class="feature-icon">📁</div>
+            <h3>Proyectos</h3>
+            <p>Crea y administra proyectos con descripción y propietario.</p>
+            <br>
+            <a href="{{ url_for('list_proyectos') }}" class="btn btn-primary">Ver Proyectos</a>
+        </div>
+
+        <div class="card feature-card">
+            <div class="feature-icon">✅</div>
+            <h3>Tareas</h3>
+            <p>Asigna tareas a proyectos con estado y prioridad.</p>
+            <br>
+            <a href="{{ url_for('list_tareas') }}" class="btn btn-primary">Ver Tareas</a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h3>🏗️ Arquitectura de Microservicios</h3>
+    <p style="margin-top: 0.5rem; color: var(--text-light);">
+        Este sistema está construido con una arquitectura de microservicios que incluye:
+        un <strong>API Gateway</strong> como punto de entrada central,
+        tres microservicios independientes (<strong>Usuarios</strong>, <strong>Proyectos</strong>,
+        <strong>Tareas</strong>) con FastAPI y PostgreSQL,
+        y un <strong>Frontend</strong> con Flask.
+        Todo orquestado con Docker Compose.
+    </p>
+</div>
+{% endblock %}

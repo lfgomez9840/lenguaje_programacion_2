@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Tareas — TaskManager{% endblock %}
+{% block content %}
+<h1>✅ Gestión de Tareas</h1>
+
+<div class="card">
+    <h3>Crear Nueva Tarea</h3>
+    <form method="POST" action="{{ url_for('crear_tarea') }}" style="margin-top: 1rem;">
+        <div class="form-row">
+            <div class="form-group">
+                <label>Título</label>
+                <input type="text" name="title" required placeholder="ej: Implementar login">
+            </div>
+            <div class="form-group">
+                <label>ID del Proyecto</label>
+                <input type="number" name="project_id" required placeholder="ej: 1" min="1">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Descripción</label>
+            <textarea name="description" rows="3" placeholder="Describe la tarea..."></textarea>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Asignado a (ID usuario, opcional)</label>
+                <input type="number" name="assigned_to" placeholder="ej: 1" min="1">
+            </div>
+            <div class="form-group">
+                <label>Estado</label>
+                <select name="status">
+                    <option value="pendiente">Pendiente</option>
+                    <option value="en_progreso">En Progreso</option>
+                    <option value="completada">Completada</option>
+                    <option value="cancelada">Cancelada</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Prioridad</label>
+            <select name="priority">
+                <option value="baja">Baja</option>
+                <option value="media" selected>Media</option>
+                <option value="alta">Alta</option>
+                <option value="critica">Crítica</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Crear Tarea</button>
+    </form>
+</div>
+
+<div class="card">
+    <h3>Lista de Tareas</h3>
+    {% if tareas %}
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Título</th>
+                <th>Proyecto ID</th>
+                <th>Estado</th>
+                <th>Prioridad</th>
+                <th>Asignado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for t in tareas %}
+            <tr>
+                <td>{{ t.id }}</td>
+                <td><strong>{{ t.title }}</strong></td>
+                <td>{{ t.project_id }}</td>
+                <td><span class="badge badge-{{ t.status }}">{{ t.status }}</span></td>
+                <td><span class="badge badge-{{ t.priority }}">{{ t.priority }}</span></td>
+                <td>{{ t.assigned_to or '—' }}</td>
+                <td>
+                    <form method="POST" action="{{ url_for('eliminar_tarea', task_id=t.id) }}" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar esta tarea?')">Eliminar</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <p>No hay tareas creadas aún.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

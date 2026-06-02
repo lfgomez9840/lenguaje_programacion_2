@@ -13,3 +13,12 @@ venv/
 
 # Variables de entorno
 .env
+
+# Docker
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

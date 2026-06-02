@@ -1,0 +1,140 @@
+version: "3.9"
+
+services:
+  # ===================== BASES DE DATOS =====================
+
+  users-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: users_db
+    volumes:
+      - users_data:/var/lib/postgresql/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  projects-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: projects_db
+    volumes:
+      - projects_data:/var/lib/postgresql/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  tasks-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: tasks_db
+    volumes:
+      - tasks_data:/var/lib/postgresql/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ===================== MICROSERVICIOS =====================
+
+  users-service:
+    build: ./services/users
+    ports:
+      - "8001:8001"
+    environment:
+      USERS_DATABASE_URL: postgresql://postgres:postgres@users-db:5432/users_db
+    depends_on:
+      users-db:
+        condition: service_healthy
+    networks:
+      - backend
+    restart: on-failure
+
+  projects-service:
+    build: ./services/projects
+    ports:
+      - "8002:8002"
+    environment:
+      PROJECTS_DATABASE_URL: postgresql://postgres:postgres@projects-db:5432/projects_db
+    depends_on:
+      projects-db:
+        condition: service_healthy
+    networks:
+      - backend
+    restart: on-failure
+
+  tasks-service:
+    build: ./services/tasks
+    ports:
+      - "8003:8003"
+    environment:
+      TASKS_DATABASE_URL: postgresql://postgres:postgres@tasks-db:5432/tasks_db
+    depends_on:
+      tasks-db:
+        condition: service_healthy
+    networks:
+      - backend
+    restart: on-failure
+
+  # ===================== API GATEWAY =====================
+
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "8000:8000"
+    environment:
+      USERS_SERVICE_URL: http://users-service:8001
+      PROJECTS_SERVICE_URL: http://projects-service:8002
+      TASKS_SERVICE_URL: http://tasks-service:8003
+    depends_on:
+      - users-service
+      - projects-service
+      - tasks-service
+    networks:
+      - backend
+      - frontend
+    restart: on-failure
+
+  # ===================== FRONTEND =====================
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5000:5000"
+    environment:
+      API_GATEWAY_URL: http://api-gateway:8000
+      SECRET_KEY: clave-secreta-produccion-cambiar
+    depends_on:
+      - api-gateway
+    networks:
+      - frontend
+    restart: on-failure
+
+# ===================== VOLÚMENES Y REDES =====================
+
+volumes:
+  users_data:
+  projects_data:
+  tasks_data:
+
+networks:
+  backend:
+    driver: bridge
+  frontend:
+    driver: bridge

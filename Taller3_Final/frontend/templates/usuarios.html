@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Usuarios — TaskManager{% endblock %}
+{% block content %}
+<h1>👥 Gestión de Usuarios</h1>
+
+<div class="card">
+    <h3>Crear Nuevo Usuario</h3>
+    <form method="POST" action="{{ url_for('crear_usuario') }}" style="margin-top: 1rem;">
+        <div class="form-row">
+            <div class="form-group">
+                <label>Nombre de usuario</label>
+                <input type="text" name="username" required placeholder="ej: jperez">
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" name="email" required placeholder="ej: juan@correo.com">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Contraseña</label>
+            <input type="password" name="password" required placeholder="Contraseña segura">
+        </div>
+        <button type="submit" class="btn btn-primary">Crear Usuario</button>
+    </form>
+</div>
+
+<div class="card">
+    <h3>Lista de Usuarios</h3>
+    {% if usuarios %}
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Usuario</th>
+                <th>Email</th>
+                <th>Estado</th>
+                <th>Creado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in usuarios %}
+            <tr>
+                <td>{{ u.id }}</td>
+                <td><strong>{{ u.username }}</strong></td>
+                <td>{{ u.email }}</td>
+                <td>
+                    {% if u.is_active %}
+                        <span class="badge badge-completada">Activo</span>
+                    {% else %}
+                        <span class="badge badge-cancelada">Inactivo</span>
+                    {% endif %}
+                </td>
+                <td>{{ u.created_at[:10] }}</td>
+                <td>
+                    <form method="POST" action="{{ url_for('eliminar_usuario', user_id=u.id) }}" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar este usuario?')">Eliminar</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <p>No hay usuarios registrados aún.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
