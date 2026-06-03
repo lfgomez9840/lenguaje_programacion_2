@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Facturas</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Generador de Facturas</h1>
+
+        <form id="factura-form">
+            <fieldset>
+                <legend>Datos de la Factura</legend>
+                <div class="form-group">
+                    <label for="numero_factura">Número de Factura:</label>
+                    <input type="text" id="numero_factura" name="numero_factura" required>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Datos del Cliente</legend>
+                <div class="form-group">
+                    <label for="cliente_nombre">Nombre:</label>
+                    <input type="text" id="cliente_nombre" name="cliente_nombre" required>
+                </div>
+                <div class="form-group">
+                    <label for="cliente_documento">Documento:</label>
+                    <input type="text" id="cliente_documento" name="cliente_documento" required>
+                </div>
+                <div class="form-group">
+                    <label for="cliente_direccion">Dirección:</label>
+                    <input type="text" id="cliente_direccion" name="cliente_direccion" required>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Ítems</legend>
+                <div id="items-container">
+                    <div class="item-row">
+                        <input type="text" placeholder="Descripción" class="item-desc" required>
+                        <input type="number" placeholder="Cantidad" class="item-cant" min="1" required>
+                        <input type="number" placeholder="Precio Unit." class="item-precio" min="0" step="0.01" required>
+                        <button type="button" class="btn-remove" onclick="removerItem(this)">X</button>
+                    </div>
+                </div>
+                <button type="button" id="btn-agregar-item">+ Agregar Ítem</button>
+            </fieldset>
+
+            <button type="submit" id="btn-generar">Generar Factura PDF</button>
+        </form>
+
+        <div id="mensaje"></div>
+    </div>
+
+    <script>
+        document.getElementById("btn-agregar-item").addEventListener("click", function() {
+            const container = document.getElementById("items-container");
+            const row = document.createElement("div");
+            row.className = "item-row";
+            row.innerHTML = 
+                <input type="text" placeholder="Descripción" class="item-desc" required>
+                <input type="number" placeholder="Cantidad" class="item-cant" min="1" required>
+                <input type="number" placeholder="Precio Unit." class="item-precio" min="0" step="0.01" required>
+                <button type="button" class="btn-remove" onclick="removerItem(this)">X</button>
+            ;
+            container.appendChild(row);
+        });
+
+        function removerItem(btn) {
+            const rows = document.querySelectorAll(".item-row");
+            if (rows.length > 1) {
+                btn.parentElement.remove();
+            }
+        }
+
+        document.getElementById("factura-form").addEventListener("submit", async function(e) {
+            e.preventDefault();
+
+            const items = [];
+            document.querySelectorAll(".item-row").forEach(row => {
+                items.push({
+                    descripcion: row.querySelector(".item-desc").value,
+                    cantidad: row.querySelector(".item-cant").value,
+                    precio_unitario: row.querySelector(".item-precio").value
+                });
+            });
+
+            const data = {
+                numero_factura: document.getElementById("numero_factura").value,
+                cliente_nombre: document.getElementById("cliente_nombre").value,
+                cliente_documento: document.getElementById("cliente_documento").value,
+                cliente_direccion: document.getElementById("cliente_direccion").value,
+                items: items
+            };
+
+            const mensaje = document.getElementById("mensaje");
+            mensaje.textContent = "Generando factura...";
+            mensaje.className = "";
+
+            try {
+                const response = await fetch("/generar-factura", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    throw new Error("Error al generar la factura");
+                }
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = actura_.pdf;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+
+                mensaje.textContent = "¡Factura generada exitosamente!";
+                mensaje.className = "exito";
+            } catch (error) {
+                mensaje.textContent = "Error: " + error.message;
+                mensaje.className = "error";
+            }
+        });
+    </script>
+</body>
+</html>
