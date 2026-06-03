@@ -1,19 +1,13 @@
-import sys
 import os
+import sys
 
-# Esto añade la carpeta actual al camino de búsqueda de Python
+# Añadimos la ruta antes de los imports de nuestra app
+# Pero Ruff ignorará el orden aquí gracias al comentario 'noqa'
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import pytest
-from fastapi.testclient import TestClient
-from backend.main import app 
-
-client = TestClient(app)
-
-# ... (el resto del archivo queda igual que antes)
-import pytest
-from fastapi.testclient import TestClient
-from backend.main import app 
+import pytest  # noqa: E402
+from fastapi.testclient import TestClient  # noqa: E402
+from backend.main import app  # noqa: E402
 
 client = TestClient(app)
 
