@@ -1,28 +1,18 @@
+import pytest
 from fastapi.testclient import TestClient
-import sys
-import os
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "backend"))
-
-from main import app
+from backend.main import app 
 
 client = TestClient(app)
-
 
 def test_root():
     response = client.get("/")
     assert response.status_code == 200
-    assert response.json()["status"] == "ok"
-
+    assert response.json() == {"message": "API de Facturación v1 activa"}
 
 def test_obtener_factura():
     response = client.get("/facturas/v1/TEST-001")
     assert response.status_code == 200
-    data = response.json()
-    assert data["numero_factura"] == "TEST-001"
-    assert "items" in data
-    assert len(data["items"]) == 2
-
+    assert response.headers["content-type"] == "application/pdf"
 
 def test_generar_factura():
     payload = {
@@ -37,7 +27,4 @@ def test_generar_factura():
     }
     response = client.post("/facturas/v1/generar", json=payload)
     assert response.status_code == 200
-    data = response.json()
-    assert data["status"] == "ok"
-    assert "pdf_base64" in data
-    assert data["numero_factura"] == "FAC-001"
+    assert response.headers["content-type"] == "application/pdf"
