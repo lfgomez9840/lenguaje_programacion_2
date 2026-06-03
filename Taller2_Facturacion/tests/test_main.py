@@ -1,3 +1,16 @@
+import sys
+import os
+
+# Esto añade la carpeta actual al camino de búsqueda de Python
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+import pytest
+from fastapi.testclient import TestClient
+from backend.main import app 
+
+client = TestClient(app)
+
+# ... (el resto del archivo queda igual que antes)
 import pytest
 from fastapi.testclient import TestClient
 from backend.main import app 
