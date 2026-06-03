@@ -29,4 +29,7 @@ jobs:
         run: ruff check Taller2_Facturacion/ --fix
 
       - name: Run Pytest
-        run: pytest Taller2_Facturacion/tests/ -v
+        run: |
+          cd Taller2_Facturacion
+          export PYTHONPATH=$PYTHONPATH:.
+          pytest tests/ -v

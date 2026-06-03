@@ -1,13 +1,6 @@
-import os
-import sys
-
-# Añadimos la ruta antes de los imports de nuestra app
-# Pero Ruff ignorará el orden aquí gracias al comentario 'noqa'
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-import pytest  # noqa: E402
-from fastapi.testclient import TestClient  # noqa: E402
-from backend.main import app  # noqa: E402
+import pytest
+from fastapi.testclient import TestClient
+from backend.main import app 
 
 client = TestClient(app)
 
@@ -24,13 +17,12 @@ def test_obtener_factura():
 def test_generar_factura():
     payload = {
         "numero_factura": "FAC-001",
-        "cliente_nombre": "Juan Pérez",
-        "cliente_documento": "123456789",
-        "cliente_direccion": "Calle 123, Bogotá",
+        "cliente_nombre": "Luis Felipe",
+        "cliente_documento": "12345",
+        "cliente_direccion": "Calle Falsa 123",
         "items": [
-            {"descripcion": "Laptop", "cantidad": 1, "precio_unitario": 2500000.0},
-            {"descripcion": "Mouse", "cantidad": 2, "precio_unitario": 85000.0},
-        ],
+            {"descripcion": "Item Test", "cantidad": 1, "precio_unitario": 100.0}
+        ]
     }
     response = client.post("/facturas/v1/generar", json=payload)
     assert response.status_code == 200
