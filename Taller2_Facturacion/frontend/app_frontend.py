@@ -1,13 +1,9 @@
-$pathFrontend = "$PWD\Taller2_Facturacion\frontend\app_frontend.py"
-
-$codeFrontend = @"
 from flask import Flask, render_template, request, send_file
 import requests
 import io
 
 app = Flask(__name__)
 
-# URL del backend (usando el nombre del servicio en docker-compose)
 BACKEND_URL = "http://backend:8000"
 
 @app.route('/')
@@ -16,7 +12,6 @@ def index():
 
 @app.route('/generar', methods=['POST'])
 def generar():
-    # Recoger datos del formulario
     datos = {
         "numero_factura": request.form.get("numero"),
         "cliente_nombre": request.form.get("nombre"),
@@ -30,7 +25,6 @@ def generar():
             }
         ]
     }
-    
     try:
         response = requests.post(f"{BACKEND_URL}/facturas/v1/generar", json=datos)
         if response.status_code == 200:
@@ -46,7 +40,3 @@ def generar():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3000, debug=True)
-"@
-
-[System.IO.File]::WriteAllText($pathFrontend, $codeFrontend, $utf8NoBom)
-Write-Host "Archivo app_frontend.py creado con éxito." -ForegroundColor Green

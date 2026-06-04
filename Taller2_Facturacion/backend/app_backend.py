@@ -1,7 +1,3 @@
-$utf8NoBom = New-Object System.Text.UTF8Encoding($false)
-$pathBackend = "$PWD\Taller2_Facturacion\backend\app_backend.py"
-
-$codeBackend = @"
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
@@ -24,7 +20,6 @@ class Factura(BaseModel):
     cliente_direccion: str
     items: List[Item]
 
-# Carpeta para guardar PDFs temporalmente
 OS_PATH = os.path.dirname(os.path.abspath(__file__))
 FACTURAS_DIR = os.path.join(OS_PATH, "archivos_facturas")
 os.makedirs(FACTURAS_DIR, exist_ok=True)
@@ -36,7 +31,6 @@ async def root():
 @app.post("/facturas/v1/generar")
 async def generar_factura(factura: Factura):
     file_path = os.path.join(FACTURAS_DIR, f"{factura.numero_factura}.pdf")
-    
     try:
         c = canvas.Canvas(file_path, pagesize=letter)
         c.setFont("Helvetica-Bold", 16)
@@ -45,11 +39,9 @@ async def generar_factura(factura: Factura):
         c.drawString(100, 730, f"Cliente: {factura.cliente_nombre}")
         c.drawString(100, 715, f"Documento: {factura.cliente_documento}")
         c.drawString(100, 700, f"Dirección: {factura.cliente_direccion}")
-        
         y = 660
         c.drawString(100, y, "Cant. | Descripción | Precio Unit. | Total")
         c.line(100, y-5, 500, y-5)
-        
         total_general = 0
         y -= 25
         for item in factura.items:
@@ -57,12 +49,10 @@ async def generar_factura(factura: Factura):
             total_general += total_item
             c.drawString(100, y, f"{item.cantidad} | {item.descripcion} | ${item.precio_unitario} | ${total_item}")
             y -= 20
-        
         c.line(100, y, 500, y)
         c.setFont("Helvetica-Bold", 12)
         c.drawString(100, y-20, f"TOTAL A PAGAR: ${total_general}")
         c.save()
-        
         return FileResponse(path=file_path, filename=f"{factura.numero_factura}.pdf", media_type='application/pdf')
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -72,16 +62,10 @@ async def obtener_factura(numero_factura: str):
     file_path = os.path.join(FACTURAS_DIR, f"{numero_factura}.pdf")
     if os.path.exists(file_path):
         return FileResponse(path=file_path, filename=f"{numero_factura}.pdf", media_type='application/pdf')
-    
-    # Si no existe, generamos una de prueba rápida
     try:
         c = canvas.Canvas(file_path, pagesize=letter)
         c.drawString(100, 750, f"FACTURA DE PRUEBA: {numero_factura}")
         c.save()
         return FileResponse(path=file_path, filename=f"{numero_factura}.pdf", media_type='application/pdf')
-    except:
+    except Exception:
         raise HTTPException(status_code=404, detail="Factura no encontrada")
-"@
-
-[System.IO.File]::WriteAllText($pathBackend, $codeBackend, $utf8NoBom)
-Write-Host "Archivo app_backend.py creado con éxito." -ForegroundColor Green
