@@ -1,12 +1,8 @@
 import pytest
 from fastapi.testclient import TestClient
 
-# Importación absoluta forzada
-from main import app 
-
-# Verificación de seguridad para el desarrollador
-if hasattr(app, "wsgi_app"):
-    raise RuntimeError("¡ERROR CRÍTICO: Se cargó Flask en lugar de FastAPI!")
+# Ahora importamos el nombre único, imposible de confundir con Flask
+from app_backend import app 
 
 client = TestClient(app)
 

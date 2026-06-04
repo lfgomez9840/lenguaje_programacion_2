@@ -9,4 +9,5 @@ COPY . .
 
 EXPOSE 8000
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# Cambia main:app por app_backend:app
+CMD ["uvicorn", "app_backend:app", "--host", "0.0.0.0", "--port", "8000"]

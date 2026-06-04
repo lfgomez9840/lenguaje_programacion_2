@@ -3,12 +3,12 @@ version: "3.9"
 services:
   backend:
     build: ./backend
+    container_name: backend_api
     ports:
       - "8000:8000"
-    volumes:
-      - ./backend:/app
+    command: uvicorn app_backend:app --host 0.0.0.0 --port 8000
     networks:
-      - facturacion-net
+      - facturacion_net
 
   frontend:
     build: ./frontend
