@@ -1,10 +1,9 @@
-from flask import Flask, render_template, request, send_file
+from flask import Flask, render_template, request, Response
 import requests
-import io
+import os
 
 app = Flask(__name__)
-
-BACKEND_URL = "http://backend:8000"
+BACKEND_URL = os.getenv("BACKEND_URL", "http://backend:8000")
 
 @app.route('/')
 def index():
@@ -12,31 +11,18 @@ def index():
 
 @app.route('/generar', methods=['POST'])
 def generar():
-    datos = {
-        "numero_factura": request.form.get("numero"),
-        "cliente_nombre": request.form.get("nombre"),
-        "cliente_documento": request.form.get("documento"),
-        "cliente_direccion": request.form.get("direccion"),
-        "items": [
-            {
-                "descripcion": request.form.get("desc"),
-                "cantidad": int(request.form.get("cant")),
-                "precio_unitario": float(request.form.get("precio"))
-            }
-        ]
-    }
     try:
-        response = requests.post(f"{BACKEND_URL}/facturas/v1/generar", json=datos)
+        data = request.json
+        response = requests.post(f"{BACKEND_URL}/facturas/v1/generar", json=data, timeout=10)
         if response.status_code == 200:
-            return send_file(
-                io.BytesIO(response.content),
+            return Response(
+                response.content,
                 mimetype='application/pdf',
-                as_attachment=True,
-                download_name=f"factura_{datos['numero_factura']}.pdf"
+                headers={"Content-disposition": f"attachment; filename=factura_{data.get('numero_factura', '001')}.pdf"}
             )
-        return f"Error en API Backend: {response.text}", 400
+        return {"error": "El backend devolvió un error"}, response.status_code
     except Exception as e:
-        return f"Error de conexión: {str(e)}", 500
+        return {"error": str(e)}, 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=3000, debug=True)
+    app.run(host='0.0.0.0', port=3000)

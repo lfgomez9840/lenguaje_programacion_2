@@ -59,12 +59,11 @@
             const container = document.getElementById("items-container");
             const row = document.createElement("div");
             row.className = "item-row";
-            row.innerHTML = 
+            row.innerHTML = `
                 <input type="text" placeholder="Descripción" class="item-desc" required>
                 <input type="number" placeholder="Cantidad" class="item-cant" min="1" required>
                 <input type="number" placeholder="Precio Unit." class="item-precio" min="0" step="0.01" required>
-                <button type="button" class="btn-remove" onclick="removerItem(this)">X</button>
-            ;
+                <button type="button" class="btn-remove" onclick="removerItem(this)">X</button>`;
             container.appendChild(row);
         });
 
@@ -82,8 +81,8 @@
             document.querySelectorAll(".item-row").forEach(row => {
                 items.push({
                     descripcion: row.querySelector(".item-desc").value,
-                    cantidad: row.querySelector(".item-cant").value,
-                    precio_unitario: row.querySelector(".item-precio").value
+                    cantidad: parseInt(row.querySelector(".item-cant").value),
+                    precio_unitario: parseFloat(row.querySelector(".item-precio").value)
                 });
             });
 
@@ -100,21 +99,22 @@
             mensaje.className = "";
 
             try {
-                const response = await fetch("/generar-factura", {
+                // CAMBIO IMPORTANTE: La ruta en app_frontend.py es /generar
+                const response = await fetch("/generar", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(data)
                 });
 
                 if (!response.ok) {
-                    throw new Error("Error al generar la factura");
+                    throw new Error("Error en el servidor: El Backend no respondió correctamente");
                 }
 
                 const blob = await response.blob();
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement("a");
                 a.href = url;
-                a.download = actura_.pdf;
+                a.download = `factura_${data.numero_factura}.pdf`;
                 document.body.appendChild(a);
                 a.click();
                 a.remove();

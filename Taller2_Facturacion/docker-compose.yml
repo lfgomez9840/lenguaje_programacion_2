@@ -1,26 +1,22 @@
-version: "3.9"
-
 services:
   backend:
     build: ./backend
     container_name: backend_api
     ports:
       - "8000:8000"
-    command: uvicorn app_backend:app --host 0.0.0.0 --port 8000
     networks:
       - facturacion_net
 
   frontend:
     build: ./frontend
+    container_name: frontend_app
     ports:
       - "3000:3000"
-    volumes:
-      - ./frontend:/app
     depends_on:
       - backend
     networks:
-      - facturacion-net
+      - facturacion_net
 
 networks:
-  facturacion-net:
+  facturacion_net:
     driver: bridge
