@@ -1,17 +1,12 @@
 import pytest
 from fastapi.testclient import TestClient
-import sys
-import os
 
-# Forzamos la ruta al directorio actual
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# Importación absoluta forzada
+from main import app 
 
-try:
-    import main
-    app = main.app
-except ImportError:
-    # Si falla, intentamos importación directa
-    from main import app
+# Verificación de seguridad para el desarrollador
+if hasattr(app, "wsgi_app"):
+    raise RuntimeError("¡ERROR CRÍTICO: Se cargó Flask en lugar de FastAPI!")
 
 client = TestClient(app)
 

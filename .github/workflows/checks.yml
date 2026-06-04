@@ -31,5 +31,8 @@ jobs:
       - name: Run Pytest
         run: |
           cd Taller2_Facturacion/backend
-          ls -R  # Esto nos mostrará en el log qué archivos ve GitHub realmente
-          PYTHONPATH=. pytest test_main.py -v
+          # Eliminamos archivos que puedan confundir a Pytest
+          find . -name "*.pyc" -delete
+          find . -name "__pycache__" -delete
+          # Ejecutamos asegurando que SOLO vea esta carpeta
+          PYTHONPATH=. python -m pytest test_main.py -v
