@@ -26,9 +26,9 @@ jobs:
           pip install -r Taller2_Facturacion/frontend/requirements.txt
 
       - name: Run Ruff
-        run: ruff check Taller2_Facturacion/ --fix --ignore E402
+        run: ruff check Taller2_Facturacion/ --fix
 
       - name: Run Pytest
         run: |
-          cd Taller2_Facturacion
-          pytest tests/ -v
+          cd Taller2_Facturacion/backend
+          pytest test_main.py -v

@@ -1,13 +1,7 @@
-import os
-import sys
 import pytest
 from fastapi.testclient import TestClient
-
-# Añadimos la carpeta padre a la ruta de búsqueda
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-# Ahora importamos 'main' que está en la carpeta 'backend'
-from backend.main import app # noqa: E402
+# Importación directa porque están en la misma carpeta
+from main import app 
 
 client = TestClient(app)
 
