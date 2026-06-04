@@ -1,19 +1,13 @@
 import os
 import sys
-
-# Forzamos a Python a encontrar la carpeta raíz del Taller
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if BASE_DIR not in sys.path:
-    sys.path.insert(0, BASE_DIR)
-
 import pytest
 from fastapi.testclient import TestClient
 
-# Ahora la importación será segura
-try:
-    from backend.main import app
-except ImportError:
-    from main import app # Fallback si ya está en la raíz
+# Añadimos la carpeta padre a la ruta de búsqueda
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+# Ahora importamos 'main' que está en la carpeta 'backend'
+from backend.main import app # noqa: E402
 
 client = TestClient(app)
 
@@ -31,8 +25,8 @@ def test_generar_factura():
     payload = {
         "numero_factura": "FAC-001",
         "cliente_nombre": "Luis Felipe",
-        "cliente_documento": "123456",
-        "cliente_direccion": "Calle 123",
+        "cliente_documento": "12345",
+        "cliente_direccion": "Calle Falsa",
         "items": [{"descripcion": "Test", "cantidad": 1, "precio_unitario": 10.0}]
     }
     response = client.post("/facturas/v1/generar", json=payload)
