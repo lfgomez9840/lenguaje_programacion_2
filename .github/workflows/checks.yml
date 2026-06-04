@@ -31,4 +31,5 @@ jobs:
       - name: Run Pytest
         run: |
           cd Taller2_Facturacion/backend
-          pytest test_main.py -v
+          ls -R  # Esto nos mostrará en el log qué archivos ve GitHub realmente
+          PYTHONPATH=. pytest test_main.py -v

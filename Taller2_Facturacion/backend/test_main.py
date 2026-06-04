@@ -1,17 +1,17 @@
-import os
-import sys
 import pytest
 from fastapi.testclient import TestClient
-import importlib.util
+import sys
+import os
 
-# CARGA DINÁMICA: Forzamos la carga de main.py sin importar el PATH
-current_dir = os.path.dirname(os.path.abspath(__file__))
-main_path = os.path.join(current_dir, "main.py")
+# Forzamos la ruta al directorio actual
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-spec = importlib.util.spec_from_file_location("main", main_path)
-main_module = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(main_module)
-app = main_module.app
+try:
+    import main
+    app = main.app
+except ImportError:
+    # Si falla, intentamos importación directa
+    from main import app
 
 client = TestClient(app)
 
