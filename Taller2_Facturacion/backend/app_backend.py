@@ -1,50 +1,87 @@
-from flask import Flask, render_template, request, jsonify, send_file
-import requests
-import io
-import base64
+$utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+$pathBackend = "$PWD\Taller2_Facturacion\backend\app_backend.py"
 
-app = Flask(__name__)
+$codeBackend = @"
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
+from pydantic import BaseModel
+from typing import List
+import os
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 
-BACKEND_URL = "http://backend:8000"
+app = FastAPI(title="API de Facturación v1")
 
-@app.route("/")
-def index():
-    return render_template("index.html")
+class Item(BaseModel):
+    descripcion: str
+    cantidad: int
+    precio_unitario: float
 
-@app.route("/generar-factura", methods=["POST"])
-def generar_factura():
-    data = request.get_json()
+class Factura(BaseModel):
+    numero_factura: str
+    cliente_nombre: str
+    cliente_documento: str
+    cliente_direccion: str
+    items: List[Item]
 
-    items = []
-    for item in data.get("items", []):
-        items.append({
-            "descripcion": item["descripcion"],
-            "cantidad": int(item["cantidad"]),
-            "precio_unitario": float(item["precio_unitario"])
-        })
+# Carpeta para guardar PDFs temporalmente
+OS_PATH = os.path.dirname(os.path.abspath(__file__))
+FACTURAS_DIR = os.path.join(OS_PATH, "archivos_facturas")
+os.makedirs(FACTURAS_DIR, exist_ok=True)
 
-    payload = {
-        "numero_factura": data["numero_factura"],
-        "cliente_nombre": data["cliente_nombre"],
-        "cliente_documento": data["cliente_documento"],
-        "cliente_direccion": data["cliente_direccion"],
-        "items": items
-    }
+@app.get("/")
+async def root():
+    return {"message": "API de Facturación v1 activa"}
 
+@app.post("/facturas/v1/generar")
+async def generar_factura(factura: Factura):
+    file_path = os.path.join(FACTURAS_DIR, f"{factura.numero_factura}.pdf")
+    
     try:
-        response = requests.post(f"{BACKEND_URL}/facturas/v1/generar", json=payload)
-        response.raise_for_status()
-        resultado = response.json()
+        c = canvas.Canvas(file_path, pagesize=letter)
+        c.setFont("Helvetica-Bold", 16)
+        c.drawString(100, 750, f"FACTURA: {factura.numero_factura}")
+        c.setFont("Helvetica", 12)
+        c.drawString(100, 730, f"Cliente: {factura.cliente_nombre}")
+        c.drawString(100, 715, f"Documento: {factura.cliente_documento}")
+        c.drawString(100, 700, f"Dirección: {factura.cliente_direccion}")
+        
+        y = 660
+        c.drawString(100, y, "Cant. | Descripción | Precio Unit. | Total")
+        c.line(100, y-5, 500, y-5)
+        
+        total_general = 0
+        y -= 25
+        for item in factura.items:
+            total_item = item.cantidad * item.precio_unitario
+            total_general += total_item
+            c.drawString(100, y, f"{item.cantidad} | {item.descripcion} | ${item.precio_unitario} | ${total_item}")
+            y -= 20
+        
+        c.line(100, y, 500, y)
+        c.setFont("Helvetica-Bold", 12)
+        c.drawString(100, y-20, f"TOTAL A PAGAR: ${total_general}")
+        c.save()
+        
+        return FileResponse(path=file_path, filename=f"{factura.numero_factura}.pdf", media_type='application/pdf')
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
-        pdf_bytes = base64.b64decode(resultado["pdf_base64"])
-        return send_file(
-            io.BytesIO(pdf_bytes),
-            mimetype="application/pdf",
-            as_attachment=True,
-            download_name=f"factura_{resultado['numero_factura']}.pdf"
-        )
-    except requests.exceptions.RequestException as e:
-        return jsonify({"error": str(e)}), 500
+@app.get("/facturas/v1/{numero_factura}")
+async def obtener_factura(numero_factura: str):
+    file_path = os.path.join(FACTURAS_DIR, f"{numero_factura}.pdf")
+    if os.path.exists(file_path):
+        return FileResponse(path=file_path, filename=f"{numero_factura}.pdf", media_type='application/pdf')
+    
+    # Si no existe, generamos una de prueba rápida
+    try:
+        c = canvas.Canvas(file_path, pagesize=letter)
+        c.drawString(100, 750, f"FACTURA DE PRUEBA: {numero_factura}")
+        c.save()
+        return FileResponse(path=file_path, filename=f"{numero_factura}.pdf", media_type='application/pdf')
+    except:
+        raise HTTPException(status_code=404, detail="Factura no encontrada")
+"@
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=3000, debug=True)
+[System.IO.File]::WriteAllText($pathBackend, $codeBackend, $utf8NoBom)
+Write-Host "Archivo app_backend.py creado con éxito." -ForegroundColor Green
