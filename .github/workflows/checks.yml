@@ -31,4 +31,4 @@ jobs:
       - name: Run Pytest
         run: |
           cd Taller2_Facturacion/backend
-          python -m pytest test_main.py -v
+          pytest test_main.py -v
